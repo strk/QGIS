@@ -246,8 +246,14 @@ QString QgsPostgresFeatureIterator::whereClauseRect()
            .arg( mSource->mRequestedSrid.isEmpty() ? mSource->mDetectedSrid : mSource->mRequestedSrid );
   }
 
+  // TODO: use a new custom parameter in QgsPostgresFeatureSource
+  QRegExp regex;
+  QString pattern = QString( "mbr,.*ST_GetFaceGeometry(.*, face_id)" );
+  regex.setPattern( pattern );
+  regex.setCaseSensitivity( Qt::CaseInsensitive );
+  QString indexed = mSource->mQuery.contains( regex ) ? "mbr" : QgsPostgresConn::quotedIdentifier( mSource->mGeometryColumn );
   QString whereClause = QString( "%1 && %2" )
-                        .arg( QgsPostgresConn::quotedIdentifier( mSource->mGeometryColumn ) )
+                        .arg( indexed )
                         .arg( qBox );
   if ( mRequest.flags() & QgsFeatureRequest::ExactIntersect )
   {
