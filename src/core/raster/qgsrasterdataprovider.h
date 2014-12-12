@@ -201,11 +201,15 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider, public QgsRast
     }
 
     /** \brief Returns the legend rendered as pixmap
-     *  useful for that layer that need to get legend layer remotly as WMS */
-    virtual QImage getLegendGraphic( double scale = 0, bool forceRefresh = false )
+     *  useful for that layer that need to get legend layer remotly as WMS 
+     * \param visibleExtent Visible extent for providers supporting contextual legends, in layer CRS
+     * \note visibleExtent parameter added in 2.8
+     */
+    virtual QImage getLegendGraphic( double scale = 0, bool forceRefresh = false, const QgsRectangle * visibleExtent = 0 )
     {
       Q_UNUSED( scale );
       Q_UNUSED( forceRefresh );
+      Q_UNUSED( visibleExtent );
       return QImage();
     }
 

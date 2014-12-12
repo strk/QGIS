@@ -787,7 +787,7 @@ void QgsLayerTreeModel::addLegendToLayer( QgsLayerTreeLayer* nodeL )
   if ( !layerLegend )
     return;
 
-  QList<QgsLayerTreeModelLegendNode*> lstNew = layerLegend->createLayerTreeModelLegendNodes( nodeL );
+  QList<QgsLayerTreeModelLegendNode*> lstNew = layerLegend->createLayerTreeModelLegendNodes( nodeL, mLegendFilterByMapSettings.data() );
 
   // apply filtering defined in layer node's custom properties (reordering, filtering, custom labels)
   QgsMapLayerLegendUtils::applyLayerNodeProperties( nodeL, lstNew );

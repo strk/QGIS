@@ -470,18 +470,8 @@ QImage *QgsWmsProvider::draw( QgsRectangle const &viewExtent, int pixelWidth, in
   bool changeXY = mCaps.shouldInvertAxisOrientation( mImageCrs );
 
   // compose the URL query string for the WMS server.
-  QString crsKey = "SRS"; //SRS in 1.1.1 and CRS in 1.3.0
-  if ( mCaps.mCapabilities.version == "1.3.0" || mCaps.mCapabilities.version == "1.3" )
-  {
-    crsKey = "CRS";
-  }
 
-  // Bounding box in WMS format (Warning: does not work with scientific notation)
-  QString bbox = QString( changeXY ? "%2,%1,%4,%3" : "%1,%2,%3,%4" )
-                 .arg( qgsDoubleToString( viewExtent.xMinimum() ) )
-                 .arg( qgsDoubleToString( viewExtent.yMinimum() ) )
-                 .arg( qgsDoubleToString( viewExtent.xMaximum() ) )
-                 .arg( qgsDoubleToString( viewExtent.yMaximum() ) );
+  QString bbox = toParamValue(viewExtent, changeXY);
 
   mCachedImage = new QImage( pixelWidth, pixelHeight, QImage::Format_ARGB32 );
   mCachedImage->fill( 0 );
@@ -524,7 +514,7 @@ QImage *QgsWmsProvider::draw( QgsRectangle const &viewExtent, int pixelWidth, in
     setQueryItem( url, "VERSION", mCaps.mCapabilities.version );
     setQueryItem( url, "REQUEST", "GetMap" );
     setQueryItem( url, "BBOX", bbox );
-    setQueryItem( url, crsKey, mImageCrs );
+    setSRSQueryItem( url );
     setQueryItem( url, "WIDTH", QString::number( pixelWidth ) );
     setQueryItem( url, "HEIGHT", QString::number( pixelHeight ) );
     setQueryItem( url, "LAYERS", layers );
@@ -695,7 +685,7 @@ QImage *QgsWmsProvider::draw( QgsRectangle const &viewExtent, int pixelWidth, in
         setQueryItem( url, "STYLES", mSettings.mActiveSubStyles.join( "," ) );
         setFormatQueryItem( url );
 
-        setQueryItem( url, crsKey, mImageCrs );
+        setSRSQueryItem( url );
 
         if ( mSettings.mTiled )
         {
@@ -2208,7 +2198,7 @@ QgsRasterIdentifyResult QgsWmsProvider::identify( const QgsPoint & thePoint, Qgs
       setQueryItem( requestUrl, "VERSION", mCaps.mCapabilities.version );
       setQueryItem( requestUrl, "REQUEST", "GetFeatureInfo" );
       setQueryItem( requestUrl, "BBOX", bbox );
-      setQueryItem( requestUrl, crsKey, mImageCrs );
+      setSRSQueryItem( requestUrl );
       setQueryItem( requestUrl, "WIDTH", QString::number( theWidth ) );
       setQueryItem( requestUrl, "HEIGHT", QString::number( theHeight ) );
       setQueryItem( requestUrl, "LAYERS", *layers );
@@ -2957,7 +2947,7 @@ void QgsWmsProvider::showMessageBox( const QString& title, const QString& text )
   message->showMessage();
 }
 
-QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh )
+QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh, const QgsRectangle* visibleExtent )
 {
   // TODO manage return basing of getCapablity => avoid call if service is not available
   // some services dowsn't expose getLegendGraphic in capabilities but adding LegendURL in
@@ -3014,6 +3004,16 @@ QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh )
   }
 
   mGetLegendGraphicScale = scale;
+
+  // add config parameter related to extent, as per MapServer RFC 101:
+  // http://www.mapserver.org/development/rfc/ms-rfc-101.html
+  bool useContextualWMSLegend = true;
+  if ( visibleExtent && useContextualWMSLegend )
+  {
+      setQueryItem( url, "BBOX", toParamValue(*visibleExtent) );
+      setSRSQueryItem( url );
+  }
+
 
   mError = "";
 
@@ -3598,4 +3598,24 @@ void QgsWmsTiledImageDownloadHandler::repeatTileRequest( QNetworkRequest const &
   QNetworkReply *reply = mNAM->get( request );
   mReplies << reply;
   connect( reply, SIGNAL( finished() ), this, SLOT( tileReplyFinished() ) );
+}
+
+QString QgsWmsProvider::toParamValue(const QgsRectangle& rect, bool changeXY)
+{
+  // Warning: does not work with scientific notation
+  return QString( changeXY ? "%2,%1,%4,%3" : "%1,%2,%3,%4" )
+                 .arg( qgsDoubleToString( rect.xMinimum() ) )
+                 .arg( qgsDoubleToString( rect.yMinimum() ) )
+                 .arg( qgsDoubleToString( rect.xMaximum() ) )
+                 .arg( qgsDoubleToString( rect.yMaximum() ) );
+}
+
+void QgsWmsProvider::setSRSQueryItem(QUrl& url)
+{
+  QString crsKey = "SRS"; //SRS in 1.1.1 and CRS in 1.3.0
+  if ( mCaps.mCapabilities.version == "1.3.0" || mCaps.mCapabilities.version == "1.3" )
+  {
+    crsKey = "CRS";
+  }
+  setQueryItem( url, crsKey, mImageCrs );
 }

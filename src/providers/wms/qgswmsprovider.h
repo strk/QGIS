@@ -176,8 +176,11 @@ class QgsWmsProvider : public QgsRasterDataProvider
      * in getCapability
      * \param scale Optional parameter that is the Scale of the wms layer
      * \param forceRefresh Optional bool parameter to force refresh getLegendGraphic call
+     * \param visibleExtent Visible extent for providers supporting contextual legends
+     *
+     * \note visibleExtent parameter added in 2.8
      */
-    QImage getLegendGraphic( double scale = 0.0, bool forceRefresh = false );
+    QImage getLegendGraphic( double scale = 0.0, bool forceRefresh = false, const QgsRectangle * visibleExtent = 0 );
 
     // TODO: Get the WMS connection
 
@@ -346,6 +349,15 @@ class QgsWmsProvider : public QgsRasterDataProvider
      *         see lastError() for more info
      */
     bool calculateExtent();
+
+    /* \brief Bounding box in WMS format
+     *
+     * \note it does not perform any escape
+     */
+    QString toParamValue(const QgsRectangle& rect, bool changeXY=false);
+
+    /* \brief add SRS or CRS parameter */
+    void setSRSQueryItem(QUrl& url);
 
   private:
 

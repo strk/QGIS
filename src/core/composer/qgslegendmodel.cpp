@@ -268,7 +268,15 @@ int QgsLegendModel::addRasterLayerItems( QStandardItem* layerItem, QgsMapLayer* 
     // BEWARE getLegendGraphic() COULD BE USED WITHOUT SCALE PARAMETER IF IT WAS ALREADY CALLED WITH
     // THIS PARAMETER FROM A COMPONENT THAT CAN RECOVER CURRENT SCALE => LEGEND IN THE DESKTOP
     // OTHERWISE IT RETURN A INVALID PIXMAP (QPixmap().isNull() == False)
-    QImage legendGraphic = rasterLayer->dataProvider()->getLegendGraphic();
+    QgsRectangle* extent = 0;
+#if 0
+    // NOTE: if this is the only layer, it should use its own extent
+    const QgsMapCanvas* canvas = mapCanvas();
+    QgsRectangle visibleExtent = canvas->mapSettings().outputExtentToLayerExtent( rlayer, canvas->extent() ); // in layer projection
+    //QgsRectangle visibleExtent(1697965.55567339,4747147.16571287,1698053.78137324,4747234.03641924);
+    extent = &visibleExtent;
+#endif
+    QImage legendGraphic = rasterLayer->dataProvider()->getLegendGraphic(0,false,extent);
     if ( !legendGraphic.isNull() )
     {
       QgsDebugMsg( QString( "downloaded legend with dimension width:" ) + QString::number( legendGraphic.width() ) + QString( " and Height:" ) + QString::number( legendGraphic.height() ) );

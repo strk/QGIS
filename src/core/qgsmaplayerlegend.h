@@ -20,6 +20,7 @@
 
 class QgsLayerTreeLayer;
 class QgsLayerTreeModelLegendNode;
+class QgsMapSettings;
 class QgsPluginLayer;
 class QgsRasterLayer;
 class QgsVectorLayer;
@@ -43,7 +44,7 @@ class CORE_EXPORT QgsMapLayerLegend : public QObject
      * Return list of legend nodes to be used for a particular layer tree layer node.
      * Ownership is transferred to the caller.
      */
-    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer ) = 0;
+    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer, const QgsMapSettings* mapSettings=0 ) = 0;
 
     // TODO: support for layer tree view delegates
 
@@ -93,7 +94,7 @@ class CORE_EXPORT QgsDefaultVectorLayerLegend : public QgsMapLayerLegend
   public:
     explicit QgsDefaultVectorLayerLegend( QgsVectorLayer* vl );
 
-    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer );
+    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer, const QgsMapSettings* mapSettings=0 );
 
   private:
     QgsVectorLayer* mLayer;
@@ -108,7 +109,7 @@ class CORE_EXPORT QgsDefaultRasterLayerLegend : public QgsMapLayerLegend
   public:
     explicit QgsDefaultRasterLayerLegend( QgsRasterLayer* rl );
 
-    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer );
+    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer, const QgsMapSettings* mapSettings=0 );
 
   private:
     QgsRasterLayer* mLayer;
@@ -123,7 +124,7 @@ class CORE_EXPORT QgsDefaultPluginLayerLegend : public QgsMapLayerLegend
   public:
     explicit QgsDefaultPluginLayerLegend( QgsPluginLayer* pl );
 
-    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer );
+    virtual QList<QgsLayerTreeModelLegendNode*> createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer, const QgsMapSettings* mapSettings=0 );
 
   private:
     QgsPluginLayer* mLayer;
