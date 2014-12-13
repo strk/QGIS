@@ -2954,6 +2954,10 @@ QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh, const 
   // the layer tags inside capabilities
   QgsDebugMsg( "entering." );
 
+  // add config parameter related to extent, as per MapServer RFC 101:
+  // http://www.mapserver.org/development/rfc/ms-rfc-101.html
+  bool useContextualWMSLegend = true;
+
   QString lurl = getLegendGraphicUrl();
 
   if ( lurl.isEmpty() )
@@ -2962,7 +2966,17 @@ QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh, const 
     return QImage();
   }
 
+  QgsRectangle mapExtent;
+  if ( visibleExtent ) mapExtent = *visibleExtent;
+  else {
+    mapExtent = extent();
+    visibleExtent = &mapExtent;
+  }
+
+  QgsDebugMsg(QString("visibleExtent is %1").arg(mapExtent.toString()));
+
   forceRefresh |= mGetLegendGraphicImage.isNull() || mGetLegendGraphicScale != scale;
+  forceRefresh |= mGetLegendGraphicExtent != mapExtent;
   if ( !forceRefresh )
     return mGetLegendGraphicImage;
 
@@ -3004,14 +3018,12 @@ QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh, const 
   }
 
   mGetLegendGraphicScale = scale;
+  mGetLegendGraphicExtent = mapExtent;
 
-  // add config parameter related to extent, as per MapServer RFC 101:
-  // http://www.mapserver.org/development/rfc/ms-rfc-101.html
-  bool useContextualWMSLegend = true;
-  if ( visibleExtent && useContextualWMSLegend )
+  if ( useContextualWMSLegend && visibleExtent )
   {
-      setQueryItem( url, "BBOX", toParamValue(*visibleExtent) );
-      setSRSQueryItem( url );
+    setQueryItem( url, "BBOX", toParamValue(*visibleExtent) );
+    setSRSQueryItem( url );
   }
 
 

@@ -404,6 +404,8 @@ class QgsWmsProvider : public QgsRasterDataProvider
      */
     double mGetLegendGraphicScale;
 
+    QgsRectangle mGetLegendGraphicExtent;
+
     /**
      * Visibility status of the given active sublayer
      */
