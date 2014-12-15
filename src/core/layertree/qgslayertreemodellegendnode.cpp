@@ -478,3 +478,69 @@ QSizeF QgsRasterSymbolLegendNode::drawSymbol( const QgsLegendSettings& settings,
   }
   return settings.symbolSize();
 }
+
+// -------------------------------------------------------------------------
+
+QgsWMSLegendNode::QgsWMSLegendNode( QgsLayerTreeLayer* nodeLayer, QObject* parent )
+    : QgsLayerTreeModelLegendNode( nodeLayer, parent )
+{
+  QgsDebugMsg( "XXX entering." );
+}
+
+const QImage& QgsWMSLegendNode::getLegendGraphic() const
+{
+  if ( mImage.isNull() ) {
+
+    QgsRasterLayer* layer = qobject_cast<QgsRasterLayer*>( mLayerNode->layer() );
+
+    QgsRectangle* extent = 0;
+    QgsRectangle visibleExtent;
+
+    const QgsLayerTreeModel* mod = model();
+    const QgsMapSettings* ms = mod->legendFilterByMap();
+    if ( ms ) {
+      visibleExtent = ms->outputExtentToLayerExtent( layer, ms->extent() );
+      extent = &visibleExtent;
+    }
+
+    mImage = layer->dataProvider()->getLegendGraphic(0, false, extent);
+
+  }
+
+  return mImage;
+}
+
+QVariant QgsWMSLegendNode::data( int role ) const
+{
+  QgsDebugMsg( QString("XXX enter") );
+  if ( role == Qt::DecorationRole )
+  {
+    return QPixmap::fromImage( getLegendGraphic() );
+  }
+  else if ( role == Qt::SizeHintRole )
+  {
+    return getLegendGraphic().size();
+  }
+  return QVariant();
+}
+
+QSizeF QgsWMSLegendNode::drawSymbol( const QgsLegendSettings& settings, ItemContext* ctx, double itemHeight ) const
+{
+  Q_UNUSED( itemHeight );
+
+  QgsDebugMsg( "XXX entering." );
+
+  if ( ctx )
+  {
+    const QImage& img = getLegendGraphic();
+    ctx->painter->drawImage( QRectF( ctx->point.x(), ctx->point.y(), settings.wmsLegendSize().width(), settings.wmsLegendSize().height() ),
+                             img, QRectF( 0, 0, img.width(), img.height() ) );
+  }
+  return settings.wmsLegendSize();
+}
+
+void QgsWMSLegendNode::invalidateMapBasedData()
+{
+  QgsDebugMsg( QString("XXX") );
+  mImage = QImage(); // set null ... TODO: only if this extent != prev extent ?
+}

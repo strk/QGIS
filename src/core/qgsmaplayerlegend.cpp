@@ -228,19 +228,7 @@ QList<QgsLayerTreeModelLegendNode*> QgsDefaultRasterLayerLegend::createLayerTree
   // temporary solution for WMS. Ideally should be done with a delegate.
   if ( mLayer->providerType() == "wms" )
   {
-    //QgsRectangle visibleExtent(1697965.55567339,4747147.16571287,1698053.78137324,4747234.03641924);
-    QgsRectangle* extent = 0;
-    QgsRectangle visibleExtent;
-    if ( mapSettings  ) {
-     visibleExtent = mapSettings->outputExtentToLayerExtent( mLayer, mapSettings->extent() );
-     extent = &visibleExtent;
-    }
-    QImage legendGraphic = mLayer->dataProvider()->getLegendGraphic(0,false,extent);
-    if ( !legendGraphic.isNull() )
-    {
-      QgsDebugMsg( QString( "downloaded legend with dimension width:" ) + QString::number( legendGraphic.width() ) + QString( " and Height:" ) + QString::number( legendGraphic.height() ) );
-      nodes << new QgsImageLegendNode( nodeLayer, legendGraphic );
-    }
+    nodes << new QgsWMSLegendNode( nodeLayer );
   }
 
   QgsLegendColorList rasterItemList = mLayer->legendSymbologyItems();
@@ -296,4 +284,3 @@ QList<QgsLayerTreeModelLegendNode*> QgsDefaultPluginLayerLegend::createLayerTree
 
   return nodes;
 }
-

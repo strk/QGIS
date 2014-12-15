@@ -2980,6 +2980,14 @@ QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh, const 
   if ( !forceRefresh )
     return mGetLegendGraphicImage;
 
+  // Protect from multiple calls
+  if ( mGetLegendGraphicReply )
+  {
+    QgsDebugMsg(QString("Another legend graphic request is in progress"));
+    return mGetLegendGraphicImage;
+  }
+
+
   QUrl url( lurl );
 
   if ( !url.hasQueryItem( "SERVICE" ) )
@@ -3043,7 +3051,7 @@ QImage QgsWmsProvider::getLegendGraphic( double scale, bool forceRefresh, const 
   mGetLegendGraphicReply->setProperty( "eventLoop", QVariant::fromValue( qobject_cast<QObject *>( &loop ) ) );
   loop.exec( QEventLoop::ExcludeUserInputEvents );
 
-  QgsDebugMsg( "exiting." );
+  QgsDebugMsg( QString("XXX exiting, returning a %1x%2 legend image").arg(mGetLegendGraphicImage.width()).arg(mGetLegendGraphicImage.height()) );
 
   return mGetLegendGraphicImage;
 }
