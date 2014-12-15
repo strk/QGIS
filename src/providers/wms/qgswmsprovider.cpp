@@ -94,6 +94,7 @@ QgsWmsProvider::QgsWmsProvider( QString const& uri, const QgsWmsCapabilities* ca
     , mGetLegendGraphicScale( 0.0 )
     , mImageCrs( DEFAULT_LATLON_CRS )
     , mCachedImage( 0 )
+    , mGetLegendGraphicReply( 0 )
     , mCachedViewExtent( 0 )
     , mExtentDirty( true )
     , mTileReqNo( 0 )
