@@ -95,6 +95,7 @@ QgsWmsProvider::QgsWmsProvider( QString const& uri, const QgsWmsCapabilities* ca
     , mImageCrs( DEFAULT_LATLON_CRS )
     , mCachedImage( 0 )
     , mGetLegendGraphicReply( 0 )
+    , mIdentifyReply( 0 )
     , mCachedViewExtent( 0 )
     , mExtentDirty( true )
     , mTileReqNo( 0 )
@@ -3119,7 +3120,7 @@ void QgsWmsProvider::getLegendGraphicReplyFinished()
 #ifdef QGISDEBUG
         QString filename = QDir::tempPath() + "/GetLegendGraphic.png";
         mGetLegendGraphicImage.save( filename );
-        QgsDebugMsg( "saved GetLegendGraphic result in debug ile: " + filename );
+        QgsDebugMsg( "saved GetLegendGraphic result in debug file: " + filename );
 #endif
       }
     }
