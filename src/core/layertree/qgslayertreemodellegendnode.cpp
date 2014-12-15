@@ -497,10 +497,12 @@ const QImage& QgsWMSLegendNode::getLegendGraphic() const
     QgsRectangle visibleExtent;
 
     const QgsLayerTreeModel* mod = model();
-    const QgsMapSettings* ms = mod->legendFilterByMap();
-    if ( ms ) {
-      visibleExtent = ms->outputExtentToLayerExtent( layer, ms->extent() );
-      extent = &visibleExtent;
+    if ( mod ) {
+      const QgsMapSettings* ms = mod->legendFilterByMap();
+      if ( ms ) {
+        visibleExtent = ms->outputExtentToLayerExtent( layer, ms->extent() );
+        extent = &visibleExtent;
+      }
     }
 
     mImage = layer->dataProvider()->getLegendGraphic(0, false, extent);
@@ -541,6 +543,8 @@ QSizeF QgsWMSLegendNode::drawSymbol( const QgsLegendSettings& settings, ItemCont
 
 void QgsWMSLegendNode::invalidateMapBasedData()
 {
-  QgsDebugMsg( QString("XXX") );
-  mImage = QImage(); // set null ... TODO: only if this extent != prev extent ?
+  // TODO: do this only if this extent != prev extent ?
+  QImage oldImg = mImage;
+  getLegendGraphic();
+  if ( oldImg != mImage ) emit dataChanged(); 
 }
