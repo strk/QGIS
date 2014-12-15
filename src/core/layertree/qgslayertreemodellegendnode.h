@@ -22,6 +22,7 @@
 class QgsLayerTreeLayer;
 class QgsLayerTreeModel;
 class QgsLegendSettings;
+class QgsMapSettings;
 class QgsSymbolV2;
 
 /**
@@ -220,6 +221,30 @@ class CORE_EXPORT QgsRasterSymbolLegendNode : public QgsLayerTreeModelLegendNode
   private:
     QColor mColor;
     QString mLabel;
+};
+
+/**
+ * Implementation of legend node interface for displaying WMS legend entries
+ *
+ * @note added in 2.8
+ */
+class CORE_EXPORT QgsWMSLegendNode : public QgsLayerTreeModelLegendNode
+{
+  public:
+    QgsWMSLegendNode( QgsLayerTreeLayer* nodeLayer, QObject* parent = 0 );
+
+    virtual QVariant data( int role ) const;
+
+    virtual QSizeF drawSymbol( const QgsLegendSettings& settings, ItemContext* ctx, double itemHeight ) const;
+
+    virtual void invalidateMapBasedData();
+
+  private:
+
+    // Lazily initializes mImage
+    const QImage& getLegendGraphic() const;
+
+    mutable QImage mImage;
 };
 
 #endif // QGSLAYERTREEMODELLEGENDNODE_H
