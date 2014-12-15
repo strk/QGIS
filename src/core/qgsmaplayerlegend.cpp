@@ -19,6 +19,7 @@
 
 #include "qgslayertree.h"
 #include "qgslayertreemodellegendnode.h"
+#include "qgslayertreemodel.h"
 #include "qgspluginlayer.h"
 #include "qgsrasterlayer.h"
 #include "qgsrendererv2.h"
@@ -181,10 +182,9 @@ QgsDefaultVectorLayerLegend::QgsDefaultVectorLayerLegend( QgsVectorLayer* vl )
   connect( mLayer, SIGNAL( rendererChanged() ), this, SIGNAL( itemsChanged() ) );
 }
 
-QList<QgsLayerTreeModelLegendNode*> QgsDefaultVectorLayerLegend::createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer, const QgsMapSettings* mapSettings )
+QList<QgsLayerTreeModelLegendNode*> QgsDefaultVectorLayerLegend::createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer )
 {
   QList<QgsLayerTreeModelLegendNode*> nodes;
-  Q_UNUSED(mapSettings);
 
   QgsFeatureRendererV2* r = mLayer->rendererV2();
   if ( !r )
@@ -221,7 +221,7 @@ QgsDefaultRasterLayerLegend::QgsDefaultRasterLayerLegend( QgsRasterLayer* rl )
   connect( mLayer, SIGNAL( rendererChanged() ), this, SIGNAL( itemsChanged() ) );
 }
 
-QList<QgsLayerTreeModelLegendNode*> QgsDefaultRasterLayerLegend::createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer, const QgsMapSettings* mapSettings )
+QList<QgsLayerTreeModelLegendNode*> QgsDefaultRasterLayerLegend::createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer )
 {
   QList<QgsLayerTreeModelLegendNode*> nodes;
 
@@ -265,10 +265,9 @@ QgsDefaultPluginLayerLegend::QgsDefaultPluginLayerLegend( QgsPluginLayer* pl )
 {
 }
 
-QList<QgsLayerTreeModelLegendNode*> QgsDefaultPluginLayerLegend::createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer, const QgsMapSettings* mapSettings )
+QList<QgsLayerTreeModelLegendNode*> QgsDefaultPluginLayerLegend::createLayerTreeModelLegendNodes( QgsLayerTreeLayer* nodeLayer )
 {
   QList<QgsLayerTreeModelLegendNode*> nodes;
-  Q_UNUSED(mapSettings);
 
   QSize iconSize( 16, 16 );
   QgsLegendSymbologyList symbologyList = mLayer->legendSymbologyItems( iconSize );
