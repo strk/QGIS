@@ -484,10 +484,9 @@ QSizeF QgsRasterSymbolLegendNode::drawSymbol( const QgsLegendSettings& settings,
 QgsWMSLegendNode::QgsWMSLegendNode( QgsLayerTreeLayer* nodeLayer, QObject* parent )
     : QgsLayerTreeModelLegendNode( nodeLayer, parent )
 {
-  QgsDebugMsg( "XXX entering." );
 }
 
-const QImage& QgsWMSLegendNode::getLegendGraphic() const
+const QImage& QgsWMSLegendNode::getLegendGraphic()
 {
   if ( mImage.isNull() ) {
 
@@ -506,6 +505,7 @@ const QImage& QgsWMSLegendNode::getLegendGraphic() const
     }
 
     mImage = layer->dataProvider()->getLegendGraphic(0, false, extent);
+    emit dataChanged();
 
   }
 
@@ -514,14 +514,15 @@ const QImage& QgsWMSLegendNode::getLegendGraphic() const
 
 QVariant QgsWMSLegendNode::data( int role ) const
 {
-  QgsDebugMsg( QString("XXX enter") );
   if ( role == Qt::DecorationRole )
   {
-    return QPixmap::fromImage( getLegendGraphic() );
+    const_cast<QgsWMSLegendNode*>(this)->getLegendGraphic();
+    return QPixmap::fromImage( mImage );
   }
   else if ( role == Qt::SizeHintRole )
   {
-    return getLegendGraphic().size();
+    //getLegendGraphic(); // more likely to crash if I do this
+    return mImage.size();
   }
   return QVariant();
 }
@@ -530,13 +531,10 @@ QSizeF QgsWMSLegendNode::drawSymbol( const QgsLegendSettings& settings, ItemCont
 {
   Q_UNUSED( itemHeight );
 
-  QgsDebugMsg( "XXX entering." );
-
   if ( ctx )
   {
-    const QImage& img = getLegendGraphic();
     ctx->painter->drawImage( QRectF( ctx->point.x(), ctx->point.y(), settings.wmsLegendSize().width(), settings.wmsLegendSize().height() ),
-                             img, QRectF( 0, 0, img.width(), img.height() ) );
+                             mImage, QRectF( 0, 0, mImage.width(), mImage.height() ) );
   }
   return settings.wmsLegendSize();
 }
@@ -544,7 +542,6 @@ QSizeF QgsWMSLegendNode::drawSymbol( const QgsLegendSettings& settings, ItemCont
 void QgsWMSLegendNode::invalidateMapBasedData()
 {
   // TODO: do this only if this extent != prev extent ?
-  QImage oldImg = mImage;
-  getLegendGraphic();
-  if ( oldImg != mImage ) emit dataChanged(); 
+  mImage = QImage();
+  emit dataChanged();
 }
