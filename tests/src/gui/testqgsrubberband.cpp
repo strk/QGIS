@@ -124,18 +124,18 @@ void TestQgsRubberband::testBoundingRect()
   mRubberband->setWidth( 1 );    // default, but better be explicit
   mRubberband->addGeometry( geom.data(), mPolygonLayer );
 
-  // 20 pixels for the extent + 8 for pen + icon
+  // 20 pixels for the extent + 3 for pen & icon per side + 2 of padding
   QCOMPARE( mRubberband->boundingRect(), QRectF(QPointF(-1,-1),QSizeF(28,28)) );
   // Not sure why should this be the position...
   QCOMPARE( mRubberband->pos(), QPointF(7,445) );
 
   mCanvas->zoomByFactor(0.5);
 
-  // 40 pixels for the extent + 8 for pen + icon
+  // 40 pixels for the extent + 6 for pen & icon per side + 2 of padding
   // NOTE: 2.6 was bogus here
-  QCOMPARE( mRubberband->boundingRect(), QRectF(QPointF(-1,-1),QSizeF(48,48)) );
+  QCOMPARE( mRubberband->boundingRect(), QRectF(QPointF(-1,-1),QSizeF(54,54)) );
   // Not sure why should this be the position...
-  QCOMPARE( mRubberband->pos(), QPointF(-302,654) );
+  QCOMPARE( mRubberband->pos(), QPointF(-305,651) );
 }
 
 
