@@ -45,6 +45,7 @@ class TestQgsRubberband : public QObject
     void cleanup(); // will be called after every testfunction.
 
     void testAddSingleMultiGeometries(); //test for #7728
+    void testBoundingRect(); //test for #12392
 
   private:
     QgsMapCanvas* mCanvas;
@@ -107,10 +108,38 @@ void TestQgsRubberband::testAddSingleMultiGeometries()
   QVERIFY( mRubberband->numberOfVertices() == 15 );
 }
 
+
+void TestQgsRubberband::testBoundingRect()
+{
+  // Output size by default is 638, 478 (1 pixel border)
+  mCanvas->setExtent( QgsRectangle( 0.0, 0.0, 638.0, 478.0 ) );
+  QCOMPARE( mCanvas->mapUnitsPerPixel (), 1.0 );
+
+  // Polygon extent is 10,10 to 30,30
+  QSharedPointer<QgsGeometry> geom( QgsGeometry::fromWkt(
+      "POLYGON((10 10,10 30,30 30,30 10,10 10))"
+  ) );
+  mRubberband = new QgsRubberBand( mCanvas, mPolygonLayer->geometryType() );
+  mRubberband->setIconSize( 5 ); // default, but better be explicit
+  mRubberband->setWidth( 1 );    // default, but better be explicit
+  mRubberband->addGeometry( geom.data(), mPolygonLayer );
+
+  // 20 pixels for the extent + 8 for pen + icon
+  QCOMPARE( mRubberband->boundingRect(), QRectF(QPointF(-1,-1),QSizeF(28,28)) );
+  // Not sure why should this be the position...
+  QCOMPARE( mRubberband->pos(), QPointF(7,445) );
+
+  mCanvas->zoomByFactor(0.5);
+
+  // 40 pixels for the extent + 8 for pen + icon
+  // NOTE: 2.6 was bogus here
+  QCOMPARE( mRubberband->boundingRect(), QRectF(QPointF(-1,-1),QSizeF(48,48)) );
+  // Not sure why should this be the position...
+  QCOMPARE( mRubberband->pos(), QPointF(-302,654) );
+}
+
+
 QTEST_MAIN( TestQgsRubberband )
 #include "testqgsrubberband.moc"
-
-
-
 
 
