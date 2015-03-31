@@ -20,6 +20,8 @@
 #include "qgssymbolv2.h"
 #include "qgsvectorcolorrampv2.h"
 #include "qgsexpression.h"
+#include "qgspainteffect.h"
+#include "qgspainteffectregistry.h"
 #include "qgsapplication.h"
 #include "qgsproject.h"
 #include "qgsogcutils.h"
@@ -38,6 +40,7 @@
 #include <QPainter>
 #include <QSettings>
 #include <QRegExp>
+#include <QPicture>
 
 QString QgsSymbolLayerV2Utils::encodeColor( QColor color )
 {
@@ -557,6 +560,20 @@ double QgsSymbolLayerV2Utils::estimateMaxSymbolBleed( QgsSymbolV2* symbol )
   return maxBleed;
 }
 
+QPicture QgsSymbolLayerV2Utils::symbolLayerPreviewPicture( QgsSymbolLayerV2* layer, QgsSymbolV2::OutputUnit units, QSize size, const QgsMapUnitScale& scale )
+{
+  QPicture picture;
+  QPainter painter;
+  painter.begin( &picture );
+  painter.setRenderHint( QPainter::Antialiasing );
+  QgsRenderContext renderContext = createRenderContext( &painter );
+  renderContext.setForceVectorOutput( true );
+  QgsSymbolV2RenderContext symbolContext( renderContext, units, 1.0, false, 0, 0, 0, scale );
+  layer->drawPreviewIcon( symbolContext, size );
+  painter.end();
+  return picture;
+}
+
 QIcon QgsSymbolLayerV2Utils::symbolLayerPreviewIcon( QgsSymbolLayerV2* layer, QgsSymbolV2::OutputUnit u, QSize size, const QgsMapUnitScale& scale )
 {
   QPixmap pixmap( size );
@@ -923,6 +940,7 @@ QgsSymbolV2* QgsSymbolLayerV2Utils::loadSymbol( const QDomElement &element )
     symbol->setMapUnitScale( mapUnitScale );
   }
   symbol->setAlpha( element.attribute( "alpha", "1.0" ).toDouble() );
+  symbol->setClipFeaturesToExtent( element.attribute( "clip_to_extent", "1" ).toInt() );
 
   return symbol;
 }
@@ -942,6 +960,13 @@ QgsSymbolLayerV2* QgsSymbolLayerV2Utils::loadSymbolLayer( QDomElement& element )
   {
     layer->setLocked( locked );
     layer->setRenderingPass( pass );
+
+    //restore layer effect
+    QDomElement effectElem = element.firstChildElement( "effect" );
+    if ( !effectElem.isNull() )
+    {
+      layer->setPaintEffect( QgsPaintEffectRegistry::instance()->createEffect( effectElem ) );
+    }
     return layer;
   }
   else
@@ -969,6 +994,7 @@ QDomElement QgsSymbolLayerV2Utils::saveSymbol( QString name, QgsSymbolV2* symbol
   symEl.setAttribute( "type", _nameForSymbolType( symbol->type() ) );
   symEl.setAttribute( "name", name );
   symEl.setAttribute( "alpha", QString::number( symbol->alpha() ) );
+  symEl.setAttribute( "clip_to_extent", symbol->clipFeaturesToExtent() ? "1" : "0" );
   QgsDebugMsg( "num layers " + QString::number( symbol->symbolLayerCount() ) );
 
   for ( int i = 0; i < symbol->symbolLayerCount(); i++ )
@@ -980,6 +1006,8 @@ QDomElement QgsSymbolLayerV2Utils::saveSymbol( QString name, QgsSymbolV2* symbol
     layerEl.setAttribute( "locked", layer->isLocked() );
     layerEl.setAttribute( "pass", layer->renderingPass() );
     saveProperties( layer->properties(), doc, layerEl );
+    layer->paintEffect()->saveProperties( doc, layerEl );
+
     if ( layer->subSymbol() != NULL )
     {
       QString subname = QString( "@%1@%2" ).arg( name ).arg( i );

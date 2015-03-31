@@ -44,6 +44,7 @@ class TestQgsRubberband : public QObject
     void init(); // will be called before each testfunction is executed.
     void cleanup(); // will be called after every testfunction.
 
+    void testBoundingRect();
     void testAddSingleMultiGeometries(); //test for #7728
     void testBoundingRect(); //test for #12392
 
@@ -92,6 +93,39 @@ void TestQgsRubberband::init()
 
 void TestQgsRubberband::cleanup()
 {
+
+}
+
+void TestQgsRubberband::testBoundingRect()
+{
+  mCanvas->resize( 500, 500 );
+  mCanvas->setExtent( QgsRectangle( 0.0, 0.0, 100.0, 100.0 ) );
+
+  QgsPolyline line;
+  line << QgsPoint( 10, 10 ) << QgsPoint( 10, 30 ) << QgsPoint( 30, 30 ) << QgsPoint( 30, 10 );
+
+  mRubberband = new QgsRubberBand( mCanvas, true );
+  mRubberband->setToGeometry( QgsGeometry::fromPolygon( QgsPolygon() << line ), nullptr );
+
+  // Initial rect
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().topLeft().x(), -1.0, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().topLeft().y(), -1.0, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().bottomRight().x(), 106.6, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().bottomRight().y(), 106.6, 0.001 ) );
+
+  // Zoom out
+  mCanvas->zoomByFactor( 2.0 );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().topLeft().x(), -1.0, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().topLeft().y(), -1.0, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().bottomRight().x(), 56.8, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().bottomRight().y(), 56.8, 0.001 ) );
+
+  // Zoom in
+  mCanvas->zoomByFactor( 0.7 );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().topLeft().x(), -1.0, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().topLeft().y(), -1.0, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().bottomRight().x(), 149.286, 0.001 ) );
+  QVERIFY( qgsDoubleNear( mRubberband->boundingRect().bottomRight().y(), 149.286, 0.001 ) );
 
 }
 
