@@ -175,6 +175,9 @@ QgsPostgresProvider::QgsPostgresProvider( QString const & uri )
 
   // date type
   << QgsVectorDataProvider::NativeType( tr( "Date" ), "date", QVariant::Date, -1, -1, -1, -1 )
+  << QgsVectorDataProvider::NativeType( tr( "Datetime" ), "datetime", QVariant::Date, -1, -1, -1, -1 )
+  << QgsVectorDataProvider::NativeType( tr( "Timestamp with time zone" ), "timestamptz", QVariant::Date, -1, -1, -1, -1 )
+  << QgsVectorDataProvider::NativeType( tr( "Timestamp without time zone" ), "timestamp", QVariant::Date, -1, -1, -1, -1 )
   ;
 
   QString key;
@@ -820,6 +823,13 @@ bool QgsPostgresProvider::loadFields()
         fieldType = QVariant::Date;
         fieldSize = -1;
       }
+      else if ( fieldTypeName.startsWith( "time" ) ||
+                fieldTypeName.startsWith( "date" ) )
+      {
+        // TODO: figure out how to better handle timezone
+        fieldType = QVariant::DateTime;
+        fieldSize = -1;
+      }
       else if ( fieldTypeName == "text" ||
                 fieldTypeName == "bool" ||
                 fieldTypeName == "geometry" ||
@@ -828,9 +838,7 @@ bool QgsPostgresProvider::loadFields()
                 fieldTypeName == "money" ||
                 fieldTypeName == "ltree" ||
                 fieldTypeName == "uuid" ||
-                fieldTypeName == "xml" ||
-                fieldTypeName.startsWith( "time" ) ||
-                fieldTypeName.startsWith( "date" ) )
+                fieldTypeName == "xml" )
       {
         fieldType = QVariant::String;
         fieldSize = -1;
