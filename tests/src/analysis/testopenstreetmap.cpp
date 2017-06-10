@@ -139,8 +139,8 @@ void TestOpenStreetMap::importAndQueries()
   // list nodes
 
   QgsOSMNodeIterator nodes = db.listNodes();
-  QCOMPARE( nodes.next().id(), ( qint64 )11111 );
-  QCOMPARE( nodes.next().id(), ( qint64 )360769661 );
+  QCOMPARE( nodes.next().id(), ( QgsOSMId )11111 );
+  QCOMPARE( nodes.next().id(), ( QgsOSMId )360769661 );
   nodes.close();
 
   // query way
@@ -148,11 +148,21 @@ void TestOpenStreetMap::importAndQueries()
   QgsOSMWay w = db.way( 32137532 );
   QCOMPARE( w.isValid(), true );
   QCOMPARE( w.nodes().count(), 5 );
-  QCOMPARE( w.nodes().at( 0 ), ( qint64 )360769661 );
-  QCOMPARE( w.nodes().at( 1 ), ( qint64 )360769664 );
+  QCOMPARE( w.nodes().at( 0 ), ( QgsOSMId )360769661 );
+  QCOMPARE( w.nodes().at( 1 ), ( QgsOSMId )360769664 );
 
   QgsOSMWay wNot = db.way( 1234567 );
   QCOMPARE( wNot.isValid(), false );
+
+  // see https://issues.qgis.org/issues/10790
+  w = db.way( 471587870 );
+  QCOMPARE( w.isValid(), true );
+  QCOMPARE( w.nodes().count(), 5 );
+  QCOMPARE( w.nodes().at( 0 ), ( QgsOSMId )4657497964 );
+  QCOMPARE( w.nodes().at( 1 ), ( QgsOSMId )4657497963 );
+  QCOMPARE( w.nodes().at( 2 ), ( QgsOSMId )4657497956 );
+  QCOMPARE( w.nodes().at( 3 ), ( QgsOSMId )4657497957 );
+  QCOMPARE( w.nodes().at( 4 ), ( QgsOSMId )4657497964 );
 
   // query way tags
 
@@ -166,7 +176,7 @@ void TestOpenStreetMap::importAndQueries()
   // list ways
 
   QgsOSMWayIterator ways = db.listWays();
-  QCOMPARE( ways.next().id(), ( qint64 )32137532 );
+  QCOMPARE( ways.next().id(), ( QgsOSMId )32137532 );
   QCOMPARE( ways.next().isValid(), false );
   ways.close();
 
