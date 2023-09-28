@@ -225,7 +225,7 @@ QgsPostgresConn *QgsPostgresConn::connectDb( const QString &conninfo, bool reado
     )
     .arg( conninfo )
     .arg( reinterpret_cast<std::uintptr_t>( conn ) )
-    .arg( shared ? " (shared)" : "" )
+    .arg( shared ? " (shared)" : " (non-shared)" )
     .arg( readonly ? "readonly" : "read-write" )
     ,
     2
