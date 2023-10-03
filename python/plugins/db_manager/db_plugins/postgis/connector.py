@@ -36,6 +36,7 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsVectorLayer,
     QgsDataSourceUri,
+    QgsLogger,
     QgsProviderRegistry,
     QgsProviderConnectionException,
     QgsFeedback,
@@ -55,8 +56,8 @@ def classFactory():
 class CursorAdapter():
 
     def _debug(self, msg):
+        QgsLogger.debug("CursorAdapter[" + hex(id(self)) + "]: " + msg)
         pass
-        # print("XXX CursorAdapter[" + hex(id(self)) + "]: " + msg)
 
     def __init__(self, connection, sql=None, feedback=None):
         self._debug("Created with sql: " + str(sql))
@@ -214,6 +215,10 @@ class CursorAdapter():
 
 class PostGisDBConnector(DBConnector):
 
+    def _debug(self, msg):
+        QgsLogger.debug("PostGisDBConnector[" + hex(id(self)) + "]: " + msg)
+        pass
+
     def __init__(self, uri, connection):
         """Creates a new PostgreSQL connector
 
@@ -238,12 +243,19 @@ class PostGisDBConnector(DBConnector):
         # self.passwd = uri.password()
         self.host = uri.host()
 
+        self._debug("__init__ about to get providerMetadata")
+
         md = QgsProviderRegistry.instance().providerMetadata(connection.providerName())
         # QgsAbstractDatabaseProviderConnection instance
         self.core_connection = md.findConnection(connection.connectionName())
         if self.core_connection is None:
+            self._debug("__init__ creating core connection for uri " + uri.uri() + " as it was not found with name " + connection.connectionName())
             self.core_connection = md.createConnection(uri.uri(), {})
+            # TODO: save with name ?
+        else:
+            self._debug("__init__ found existing connection named " + connection.connectionName())
 
+        # TODO: delegate these checks to the core_connection itself ?
         c = self._execute(None, "SELECT current_user,current_database()")
         self.user, self.dbname = self._fetchone(c)
         self._close_cursor(c)
@@ -1212,7 +1224,9 @@ class PostGisDBConnector(DBConnector):
 
     def _get_cursor(self, name=None):
         # if name is not None:
-        #   print("XXX _get_cursor called with a Name: " + name)
+        #   self._debug("_get_cursor called with a Name: " + name)
+        # TODO: check correctness of CursorAdapter constructor call,
+        #       second argument is supposed to be an SQL, not a "name"
         return CursorAdapter(self.core_connection, name)
 
     def _commit(self):
