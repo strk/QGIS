@@ -175,8 +175,7 @@ class CORE_EXPORT QgsRectangle
      */
     void setNull() SIP_HOLDGIL
     {
-      mXmin = mYmin = std::numeric_limits<double>::max();
-      mXmax = mYmax = -std::numeric_limits<double>::max();
+      mXmin = mYmin = mXmax = mYmax = std::numeric_limits< double >::quiet_NaN();
     }
 
     /**
@@ -641,10 +640,10 @@ class CORE_EXPORT QgsRectangle
 
   private:
 
-    double mXmin = std::numeric_limits<double>::max();
-    double mYmin = std::numeric_limits<double>::max();
-    double mXmax = -std::numeric_limits<double>::max();
-    double mYmax = -std::numeric_limits<double>::max();
+    double mXmin = std::numeric_limits< double >::quiet_NaN();
+    double mYmin = std::numeric_limits< double >::quiet_NaN();
+    double mXmax = std::numeric_limits< double >::quiet_NaN();
+    double mYmax = std::numeric_limits< double >::quiet_NaN();
 
 };
 
