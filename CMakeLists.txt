@@ -53,6 +53,11 @@ else()
   set(PREFER_INTERNAL_LIBS TRUE)
 endif()
 
+# This needs to be set before any add_directory in order to be visible
+# by the subdirectories
+set(QGIS_TEST_TMP_DIR "${CMAKE_BINARY_DIR}/tmp")
+message (STATUS "Ctest Temp Directory set to: ${QGIS_TEST_TMP_DIR}")
+
 #############################################################
 # Project and version
 set(CPACK_PACKAGE_VERSION_MAJOR "3")
